@@ -1,6 +1,6 @@
 
-import { useState, useRef } from 'react';
-import { Copy } from 'lucide-react';
+import { useState } from 'react';
+import { Copy, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,12 @@ export default function FormulaGenerator() {
   // Valeurs par défaut selon la formule expliquée
   const [points, setPoints] = useState(5.5);
   const [seuilMinimal, setSeuilMinimal] = useState(4.8);
-  const [pointsMax, setPointsMax] = useState(20);
+  const [pointsMax, setPointsMax] = useState(8);
   const [noteMin, setNoteMin] = useState(4);
   const [noteMax, setNoteMax] = useState(6);
   const [valeurBase, setValeurBase] = useState(1);
   const [ajustementNote, setAjustementNote] = useState(3);
-  const [decimalPlaces, setDecimalPlaces] = useState(2);
+  const [decimalPlaces, setDecimalPlaces] = useState(1);
   
   const { toast } = useToast();
   
@@ -42,9 +42,10 @@ export default function FormulaGenerator() {
     });
   };
 
-  // Calcul de la note finale (partie entière)
+  // Calcul de la note finale avec arrondi approprié
   const getFinalGrade = () => {
-    return Math.floor(calculateFormula());
+    const rawGrade = calculateFormula();
+    return Number(rawGrade.toFixed(decimalPlaces));
   };
 
   // Déterminer si les points sont en dessous du seuil
@@ -52,31 +53,31 @@ export default function FormulaGenerator() {
   
   return (
     <div className="container max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-semibold mb-6 text-center">Convertisseur Points en Notes</h1>
+      <h1 className="text-2xl font-semibold mb-6 text-center">Convertisseur de Points en Notes</h1>
       
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-base">Explication de la formule</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Info size={18} className="text-muted-foreground" />
+            Paramètres configurés
+          </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          <p>Cette formule convertit des points en notes selon un barème personnalisable :</p>
-          <ul className="list-disc pl-5 mt-2 space-y-1">
-            <li><code>A1</code> : Cellule contenant les points obtenus</li>
-            <li><code>Seuil minimal</code> : Points minimaux pour obtenir la note minimale</li>
-            <li><code>Points max - Seuil minimal</code> : Plage des points au-dessus du seuil</li>
-            <li><code>Note max - Note min</code> : Plage des notes possibles</li>
-            <li><code>Ajustement note</code> : Valeur pour ajuster la note finale</li>
-          </ul>
+        <CardContent className="text-sm space-y-2">
+          <p><strong>Total des points :</strong> {pointsMax} (score maximum possible)</p>
+          <p><strong>Seuil de suffisance :</strong> {seuilMinimal} points ({Math.round((seuilMinimal/pointsMax)*100)}% du total) pour obtenir une note de {noteMin}</p>
+          <p><strong>Arrondi :</strong> À {decimalPlaces === 1 ? "une décimale" : decimalPlaces === 0 ? "l'entier" : `${decimalPlaces} décimales`}</p>
+          <p><strong>Formule Excel :</strong> {generateFormulaText()}</p>
         </CardContent>
       </Card>
       
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-base">Paramètres du barème</CardTitle>
+          <CardTitle className="text-base">Simulation</CardTitle>
+          <CardDescription>Testez différentes valeurs de points pour voir la note correspondante</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="bg-muted/30 p-4 rounded-lg mb-6">
-            <label className="block text-sm font-medium mb-2">Points obtenus (valeur A1):</label>
+            <label className="block text-sm font-medium mb-2">Points obtenus :</label>
             <div className="flex items-center gap-4">
               <Input 
                 type="number" 
@@ -88,7 +89,7 @@ export default function FormulaGenerator() {
               <div className="flex-grow">
                 <Slider
                   min={0}
-                  max={pointsMax + 1}
+                  max={pointsMax}
                   step={0.1}
                   value={[points]}
                   onValueChange={(value) => setPoints(value[0])}
@@ -96,58 +97,76 @@ export default function FormulaGenerator() {
               </div>
             </div>
             <div className="mt-3 text-sm">
-              Note calculée: <span className={`text-lg font-medium ${isBelowThreshold ? 'text-destructive' : 'text-primary'}`}>{getFinalGrade()}</span>
+              <strong>Note calculée :</strong> <span className={`text-lg font-medium ${isBelowThreshold ? 'text-destructive' : 'text-primary'}`}>{getFinalGrade()}</span>
               {isBelowThreshold && <span className="ml-2 text-destructive text-xs">(En dessous du seuil minimal)</span>}
             </div>
           </div>
           
+          <div className="bg-muted/20 p-4 rounded-lg">
+            <p className="text-sm text-muted-foreground mb-1">Calcul détaillé :</p>
+            <p className="text-sm font-mono text-muted-foreground mb-1">
+              {valeurBase} + (({points} - {seuilMinimal}) / ({pointsMax} - {seuilMinimal}) * ({noteMax} - {noteMin})) + {ajustementNote}
+            </p>
+            <p className="text-sm font-mono">
+              = {calculateFormula().toFixed(6)} → {getFinalGrade()} (arrondi à {decimalPlaces} décimale{decimalPlaces > 1 ? 's' : ''})
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-base">Paramètres du barème</CardTitle>
+          <CardDescription>Modifiez ces valeurs pour ajuster votre échelle de notation</CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Seuil minimal pour obtenir {noteMin}:</label>
-              <Input 
-                type="number" 
-                value={seuilMinimal} 
-                onChange={(e) => setSeuilMinimal(parseFloat(e.target.value) || 0)}
-                step="0.1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Points minimums pour la note {noteMin}</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Points maximaux:</label>
+              <label className="block text-sm font-medium mb-1">Total des points :</label>
               <Input 
                 type="number" 
                 value={pointsMax} 
                 onChange={(e) => setPointsMax(parseFloat(e.target.value) || 0)}
                 step="0.1"
               />
-              <p className="text-xs text-muted-foreground mt-1">Points maximaux possibles</p>
+              <p className="text-xs text-muted-foreground mt-1">Score maximum possible sur l'évaluation</p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Note minimale:</label>
+              <label className="block text-sm font-medium mb-1">Seuil de suffisance :</label>
+              <Input 
+                type="number" 
+                value={seuilMinimal} 
+                onChange={(e) => setSeuilMinimal(parseFloat(e.target.value) || 0)}
+                step="0.1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Points minimums pour obtenir la note {noteMin}</p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Note minimale :</label>
               <Input 
                 type="number" 
                 value={noteMin} 
                 onChange={(e) => setNoteMin(parseFloat(e.target.value) || 0)}
                 step="0.1"
               />
-              <p className="text-xs text-muted-foreground mt-1">Note au seuil minimal</p>
+              <p className="text-xs text-muted-foreground mt-1">Note attribuée au seuil minimal</p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Note maximale:</label>
+              <label className="block text-sm font-medium mb-1">Note maximale :</label>
               <Input 
                 type="number" 
                 value={noteMax} 
                 onChange={(e) => setNoteMax(parseFloat(e.target.value) || 0)}
                 step="0.1"
               />
-              <p className="text-xs text-muted-foreground mt-1">Note maximale possible</p>
+              <p className="text-xs text-muted-foreground mt-1">Note attribuée au score maximum</p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Valeur de base:</label>
+              <label className="block text-sm font-medium mb-1">Constante de base :</label>
               <Input 
                 type="number" 
                 value={valeurBase} 
@@ -158,18 +177,18 @@ export default function FormulaGenerator() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Ajustement note:</label>
+              <label className="block text-sm font-medium mb-1">Constante d'ajustement :</label>
               <Input 
                 type="number" 
                 value={ajustementNote} 
                 onChange={(e) => setAjustementNote(parseFloat(e.target.value) || 0)}
                 step="0.1"
               />
-              <p className="text-xs text-muted-foreground mt-1">Valeur ajoutée à la fin</p>
+              <p className="text-xs text-muted-foreground mt-1">Valeur ajoutée en fin de calcul</p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Nombre de décimales:</label>
+              <label className="block text-sm font-medium mb-1">Nombre de décimales :</label>
               <Input 
                 type="number" 
                 value={decimalPlaces} 
@@ -177,15 +196,16 @@ export default function FormulaGenerator() {
                 min="0"
                 max="10"
               />
-              <p className="text-xs text-muted-foreground mt-1">Précision de l'arrondi</p>
+              <p className="text-xs text-muted-foreground mt-1">Précision de l'arrondi final</p>
             </div>
           </div>
         </CardContent>
       </Card>
       
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
           <CardTitle className="text-base">Formule Excel générée</CardTitle>
+          <CardDescription>Copiez cette formule dans votre tableur</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="bg-muted/30 p-3 rounded-lg flex items-center">
@@ -201,32 +221,9 @@ export default function FormulaGenerator() {
               <span className="sr-only sm:not-sr-only sm:inline">Copier</span>
             </Button>
           </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Simulation des résultats</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div className="mb-4 sm:mb-0">
-              <p className="text-sm text-muted-foreground mb-1">Pour {points} points :</p>
-              <p className="text-3xl font-mono font-semibold">
-                {getFinalGrade()}
-              </p>
-            </div>
-            <Separator className="mb-4 sm:hidden" />
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Calcul détaillé :</p>
-              <p className="text-sm font-mono text-muted-foreground mb-1">
-                {valeurBase} + (({points} - {seuilMinimal}) / ({pointsMax} - {seuilMinimal}) * ({noteMax} - {noteMin})) + {ajustementNote}
-              </p>
-              <p className="text-sm font-mono">
-                = {calculateFormula().toFixed(6)} → {getFinalGrade()}
-              </p>
-            </div>
-          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            * Remplacez A1 par la cellule contenant vos points
+          </p>
         </CardContent>
       </Card>
     </div>
