@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Copy, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -12,27 +12,62 @@ export default function FormulaGenerator() {
   // Valeurs par défaut selon la formule expliquée
   const [points, setPoints] = useState(5.5);
   const [seuilMinimalPercent, setSeuilMinimalPercent] = useState(60); // Seuil en pourcentage
+  const [seuilMinimalPoints, setSeuilMinimalPoints] = useState(4.8); // Seuil en points
   const [pointsMax, setPointsMax] = useState(8);
   const [noteMin, setNoteMin] = useState(4);
   const [noteMax, setNoteMax] = useState(6);
   const [valeurBase, setValeurBase] = useState(1);
   const [ajustementNote, setAjustementNote] = useState(3);
   const [decimalPlaces, setDecimalPlaces] = useState(1);
+  const [isUpdatingPercent, setIsUpdatingPercent] = useState(false);
+  const [isUpdatingPoints, setIsUpdatingPoints] = useState(false);
   
   const { toast } = useToast();
   
-  // Calcul du seuil minimal en points à partir du pourcentage
-  const seuilMinimal = (seuilMinimalPercent / 100) * pointsMax;
+  // Synchronisation des valeurs de seuil (pourcentage et points)
+  useEffect(() => {
+    if (!isUpdatingPoints && !isUpdatingPercent) {
+      // Initialisation
+      const points = (seuilMinimalPercent / 100) * pointsMax;
+      setSeuilMinimalPoints(points);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isUpdatingPercent) {
+      // Si le pourcentage est mis à jour, calculer les points
+      const points = (seuilMinimalPercent / 100) * pointsMax;
+      setSeuilMinimalPoints(points);
+      setIsUpdatingPercent(false);
+    }
+  }, [seuilMinimalPercent, pointsMax, isUpdatingPercent]);
+
+  useEffect(() => {
+    if (isUpdatingPoints) {
+      // Si les points sont mis à jour, calculer le pourcentage
+      const percent = (seuilMinimalPoints / pointsMax) * 100;
+      setSeuilMinimalPercent(Math.round(percent));
+      setIsUpdatingPoints(false);
+    }
+  }, [seuilMinimalPoints, pointsMax, isUpdatingPoints]);
+
+  // Mise à jour des points max recalcule aussi le seuil en points
+  useEffect(() => {
+    if (!isUpdatingPoints) {
+      const points = (seuilMinimalPercent / 100) * pointsMax;
+      setSeuilMinimalPoints(points);
+    }
+  }, [pointsMax]);
   
   // Calcul de la formule
   const calculateFormula = () => {
-    const result = valeurBase + ((points - seuilMinimal) / (pointsMax - seuilMinimal) * (noteMax - noteMin)) + ajustementNote;
+    const result = valeurBase + ((points - seuilMinimalPoints) / (pointsMax - seuilMinimalPoints) * (noteMax - noteMin)) + ajustementNote;
     return result;
   };
   
   // Génération de la formule sous forme de texte
   const generateFormulaText = () => {
-    return `=ARRONDI(${valeurBase} + ((A1 - ${seuilMinimal.toString().replace('.', ',')}) / (${pointsMax.toString().replace('.', ',')} - ${seuilMinimal.toString().replace('.', ',')}) * (${noteMax.toString().replace('.', ',')} - ${noteMin.toString().replace('.', ',')})) + ${ajustementNote}; ${decimalPlaces})`;
+    return `=ARRONDI(${valeurBase} + ((A1 - ${seuilMinimalPoints.toString().replace('.', ',')}) / (${pointsMax.toString().replace('.', ',')} - ${seuilMinimalPoints.toString().replace('.', ',')}) * (${noteMax.toString().replace('.', ',')} - ${noteMin.toString().replace('.', ',')})) + ${ajustementNote}; ${decimalPlaces})`;
   };
   
   // Copier la formule dans le presse-papier
@@ -52,11 +87,18 @@ export default function FormulaGenerator() {
   };
 
   // Déterminer si les points sont en dessous du seuil
-  const isBelowThreshold = points < seuilMinimal;
+  const isBelowThreshold = points < seuilMinimalPoints;
 
   // Mise à jour du seuil en pourcentage
   const handleSeuilPercentChange = (value: number) => {
     setSeuilMinimalPercent(value);
+    setIsUpdatingPercent(true);
+  };
+
+  // Mise à jour du seuil en points
+  const handleSeuilPointsChange = (value: number) => {
+    setSeuilMinimalPoints(value);
+    setIsUpdatingPoints(true);
   };
   
   return (
@@ -72,7 +114,7 @@ export default function FormulaGenerator() {
         </CardHeader>
         <CardContent className="text-sm space-y-2">
           <p><strong>Total des points :</strong> {pointsMax} (score maximum possible)</p>
-          <p><strong>Seuil de suffisance :</strong> {seuilMinimal.toFixed(1)} points ({seuilMinimalPercent}% du total) pour obtenir une note de {noteMin}</p>
+          <p><strong>Seuil de suffisance :</strong> {seuilMinimalPoints.toFixed(1)} points ({seuilMinimalPercent}% du total) pour obtenir une note de {noteMin}</p>
           <p><strong>Arrondi :</strong> À {decimalPlaces === 1 ? "une décimale" : decimalPlaces === 0 ? "l'entier" : `${decimalPlaces} décimales`}</p>
           <p><strong>Formule Excel :</strong> {generateFormulaText()}</p>
         </CardContent>
@@ -113,7 +155,7 @@ export default function FormulaGenerator() {
           <div className="bg-muted/20 p-4 rounded-lg">
             <p className="text-sm text-muted-foreground mb-1">Calcul détaillé :</p>
             <p className="text-sm font-mono text-muted-foreground mb-1">
-              {valeurBase} + (({points} - {seuilMinimal.toFixed(2)}) / ({pointsMax} - {seuilMinimal.toFixed(2)}) * ({noteMax} - {noteMin})) + {ajustementNote}
+              {valeurBase} + (({points} - {seuilMinimalPoints.toFixed(2)}) / ({pointsMax} - {seuilMinimalPoints.toFixed(2)}) * ({noteMax} - {noteMin})) + {ajustementNote}
             </p>
             <p className="text-sm font-mono">
               = {calculateFormula().toFixed(6)} → {getFinalGrade()} (arrondi à {decimalPlaces} décimale{decimalPlaces > 1 ? 's' : ''})
@@ -140,20 +182,35 @@ export default function FormulaGenerator() {
               <p className="text-xs text-muted-foreground mt-1">Score maximum possible sur l'évaluation</p>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium mb-1">Seuil de suffisance (%) :</label>
-              <div className="flex items-center gap-2 mb-2">
-                <Input 
-                  type="number" 
-                  value={seuilMinimalPercent} 
-                  onChange={(e) => setSeuilMinimalPercent(parseFloat(e.target.value) || 0)}
-                  min="0"
-                  max="100"
-                  step="1"
-                  className="w-20"
-                />
-                <span className="text-sm">%</span>
-                <div className="flex-grow">
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium mb-1">Seuil de suffisance :</label>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <div className="flex items-center gap-1">
+                  <Input 
+                    type="number" 
+                    value={seuilMinimalPoints} 
+                    onChange={(e) => handleSeuilPointsChange(parseFloat(e.target.value) || 0)}
+                    min="0"
+                    max={pointsMax}
+                    step="0.1"
+                    className="w-20"
+                  />
+                  <span className="text-sm whitespace-nowrap">points</span>
+                </div>
+                <span className="text-sm whitespace-nowrap">ou</span>
+                <div className="flex items-center gap-1">
+                  <Input 
+                    type="number" 
+                    value={seuilMinimalPercent} 
+                    onChange={(e) => handleSeuilPercentChange(parseFloat(e.target.value) || 0)}
+                    min="0"
+                    max="100"
+                    step="1"
+                    className="w-20"
+                  />
+                  <span className="text-sm whitespace-nowrap">%</span>
+                </div>
+                <div className="flex-grow mt-2 sm:mt-0">
                   <Slider
                     min={0}
                     max={100}
@@ -163,9 +220,7 @@ export default function FormulaGenerator() {
                   />
                 </div>
               </div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <span>Équivaut à {seuilMinimal.toFixed(1)} points pour obtenir la note {noteMin}</span>
-              </div>
+              <p className="text-xs text-muted-foreground mt-1">Points minimums pour obtenir la note {noteMin}</p>
             </div>
             
             <div>
