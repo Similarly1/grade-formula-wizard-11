@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 export default function FormulaGenerator() {
   // Valeurs par défaut selon la formule expliquée
   const [points, setPoints] = useState(5.5);
-  const [seuilMinimal, setSeuilMinimal] = useState(4.8);
+  const [seuilMinimalPercent, setSeuilMinimalPercent] = useState(60); // Seuil en pourcentage
   const [pointsMax, setPointsMax] = useState(8);
   const [noteMin, setNoteMin] = useState(4);
   const [noteMax, setNoteMax] = useState(6);
@@ -20,6 +20,9 @@ export default function FormulaGenerator() {
   const [decimalPlaces, setDecimalPlaces] = useState(1);
   
   const { toast } = useToast();
+  
+  // Calcul du seuil minimal en points à partir du pourcentage
+  const seuilMinimal = (seuilMinimalPercent / 100) * pointsMax;
   
   // Calcul de la formule
   const calculateFormula = () => {
@@ -50,6 +53,11 @@ export default function FormulaGenerator() {
 
   // Déterminer si les points sont en dessous du seuil
   const isBelowThreshold = points < seuilMinimal;
+
+  // Mise à jour du seuil en pourcentage
+  const handleSeuilPercentChange = (value: number) => {
+    setSeuilMinimalPercent(value);
+  };
   
   return (
     <div className="container max-w-3xl mx-auto px-4 py-8">
@@ -64,7 +72,7 @@ export default function FormulaGenerator() {
         </CardHeader>
         <CardContent className="text-sm space-y-2">
           <p><strong>Total des points :</strong> {pointsMax} (score maximum possible)</p>
-          <p><strong>Seuil de suffisance :</strong> {seuilMinimal} points ({Math.round((seuilMinimal/pointsMax)*100)}% du total) pour obtenir une note de {noteMin}</p>
+          <p><strong>Seuil de suffisance :</strong> {seuilMinimal.toFixed(1)} points ({seuilMinimalPercent}% du total) pour obtenir une note de {noteMin}</p>
           <p><strong>Arrondi :</strong> À {decimalPlaces === 1 ? "une décimale" : decimalPlaces === 0 ? "l'entier" : `${decimalPlaces} décimales`}</p>
           <p><strong>Formule Excel :</strong> {generateFormulaText()}</p>
         </CardContent>
@@ -105,7 +113,7 @@ export default function FormulaGenerator() {
           <div className="bg-muted/20 p-4 rounded-lg">
             <p className="text-sm text-muted-foreground mb-1">Calcul détaillé :</p>
             <p className="text-sm font-mono text-muted-foreground mb-1">
-              {valeurBase} + (({points} - {seuilMinimal}) / ({pointsMax} - {seuilMinimal}) * ({noteMax} - {noteMin})) + {ajustementNote}
+              {valeurBase} + (({points} - {seuilMinimal.toFixed(2)}) / ({pointsMax} - {seuilMinimal.toFixed(2)}) * ({noteMax} - {noteMin})) + {ajustementNote}
             </p>
             <p className="text-sm font-mono">
               = {calculateFormula().toFixed(6)} → {getFinalGrade()} (arrondi à {decimalPlaces} décimale{decimalPlaces > 1 ? 's' : ''})
@@ -133,14 +141,31 @@ export default function FormulaGenerator() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Seuil de suffisance :</label>
-              <Input 
-                type="number" 
-                value={seuilMinimal} 
-                onChange={(e) => setSeuilMinimal(parseFloat(e.target.value) || 0)}
-                step="0.1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Points minimums pour obtenir la note {noteMin}</p>
+              <label className="block text-sm font-medium mb-1">Seuil de suffisance (%) :</label>
+              <div className="flex items-center gap-2 mb-2">
+                <Input 
+                  type="number" 
+                  value={seuilMinimalPercent} 
+                  onChange={(e) => setSeuilMinimalPercent(parseFloat(e.target.value) || 0)}
+                  min="0"
+                  max="100"
+                  step="1"
+                  className="w-20"
+                />
+                <span className="text-sm">%</span>
+                <div className="flex-grow">
+                  <Slider
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[seuilMinimalPercent]}
+                    onValueChange={(value) => handleSeuilPercentChange(value[0])}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center text-xs text-muted-foreground">
+                <span>Équivaut à {seuilMinimal.toFixed(1)} points pour obtenir la note {noteMin}</span>
+              </div>
             </div>
             
             <div>
