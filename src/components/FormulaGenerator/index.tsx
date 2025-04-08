@@ -1,6 +1,5 @@
 
 import { FormulaDisplay } from './components/FormulaDisplay';
-import { ParametersSummary } from './components/ParametersSummary';
 import { Simulation } from './components/Simulation';
 import { ParametersForm } from './components/ParametersForm';
 import { useFormulaCalculation } from './hooks/useFormulaCalculation';
@@ -34,15 +33,6 @@ export default function FormulaGenerator() {
   return (
     <div className="container max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-semibold mb-6 text-center">Convertisseur de Points en Notes</h1>
-      
-      <ParametersSummary 
-        pointsMax={pointsMax}
-        seuilMinimalPoints={seuilMinimalPoints}
-        seuilMinimalPercent={seuilMinimalPercent}
-        noteMin={noteMin}
-        decimalPlaces={decimalPlaces}
-        generateFormulaText={generateFormulaText}
-      />
       
       <Simulation 
         points={points}

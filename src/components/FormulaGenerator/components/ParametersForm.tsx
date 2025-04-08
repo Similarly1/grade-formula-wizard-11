@@ -2,6 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from 'lucide-react';
 
 interface ParametersFormProps {
   pointsMax: number;
@@ -48,18 +50,37 @@ export const ParametersForm = ({
     <CardContent>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Total des points :</label>
+          <label className="block text-sm font-medium mb-1">
+            Total des points :
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <sup><Info size={12} className="inline ml-1 text-muted-foreground cursor-help" /></sup>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Score maximum possible sur l'évaluation</p>
+              </TooltipContent>
+            </Tooltip>
+          </label>
           <Input 
             type="number" 
             value={pointsMax} 
             onChange={(e) => setPointsMax(parseFloat(e.target.value) || 0)}
             step="0.1"
           />
-          <p className="text-xs text-muted-foreground mt-1">Score maximum possible sur l'évaluation</p>
         </div>
         
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium mb-1">Seuil de suffisance :</label>
+          <label className="block text-sm font-medium mb-1">
+            Seuil de suffisance :
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <sup><Info size={12} className="inline ml-1 text-muted-foreground cursor-help" /></sup>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Nombre minimum de points nécessaires pour obtenir la note minimale de suffisance</p>
+              </TooltipContent>
+            </Tooltip>
+          </label>
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <div className="flex items-center gap-1">
               <Input 
@@ -100,51 +121,97 @@ export const ParametersForm = ({
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Note minimale :</label>
+          <label className="block text-sm font-medium mb-1">
+            Note minimale :
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <sup><Info size={12} className="inline ml-1 text-muted-foreground cursor-help" /></sup>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Note attribuée lorsqu'un élève atteint exactement le seuil de suffisance</p>
+              </TooltipContent>
+            </Tooltip>
+          </label>
           <Input 
             type="number" 
             value={noteMin} 
             onChange={(e) => setNoteMin(parseFloat(e.target.value) || 0)}
             step="0.1"
           />
-          <p className="text-xs text-muted-foreground mt-1">Note attribuée au seuil minimal</p>
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Note maximale :</label>
+          <label className="block text-sm font-medium mb-1">
+            Note maximale :
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <sup><Info size={12} className="inline ml-1 text-muted-foreground cursor-help" /></sup>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Note attribuée au score maximum</p>
+              </TooltipContent>
+            </Tooltip>
+          </label>
           <Input 
             type="number" 
             value={noteMax} 
             onChange={(e) => setNoteMax(parseFloat(e.target.value) || 0)}
             step="0.1"
           />
-          <p className="text-xs text-muted-foreground mt-1">Note attribuée au score maximum</p>
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Constante de base :</label>
+          <label className="block text-sm font-medium mb-1">
+            Constante de base :
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <sup><Info size={12} className="inline ml-1 text-muted-foreground cursor-help" /></sup>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Valeur initiale dans la formule</p>
+              </TooltipContent>
+            </Tooltip>
+          </label>
           <Input 
             type="number" 
             value={valeurBase} 
             onChange={(e) => setValeurBase(parseFloat(e.target.value) || 0)}
             step="0.1"
           />
-          <p className="text-xs text-muted-foreground mt-1">Valeur initiale dans la formule</p>
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Constante d'ajustement :</label>
+          <label className="block text-sm font-medium mb-1">
+            Constante d'ajustement :
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <sup><Info size={12} className="inline ml-1 text-muted-foreground cursor-help" /></sup>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Valeur ajoutée en fin de calcul</p>
+              </TooltipContent>
+            </Tooltip>
+          </label>
           <Input 
             type="number" 
             value={ajustementNote} 
             onChange={(e) => setAjustementNote(parseFloat(e.target.value) || 0)}
             step="0.1"
           />
-          <p className="text-xs text-muted-foreground mt-1">Valeur ajoutée en fin de calcul</p>
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Nombre de décimales :</label>
+          <label className="block text-sm font-medium mb-1">
+            Nombre de décimales :
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <sup><Info size={12} className="inline ml-1 text-muted-foreground cursor-help" /></sup>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">Précision de l'arrondi final</p>
+              </TooltipContent>
+            </Tooltip>
+          </label>
           <Input 
             type="number" 
             value={decimalPlaces} 
@@ -152,7 +219,6 @@ export const ParametersForm = ({
             min="0"
             max="10"
           />
-          <p className="text-xs text-muted-foreground mt-1">Précision de l'arrondi final</p>
         </div>
       </div>
     </CardContent>
