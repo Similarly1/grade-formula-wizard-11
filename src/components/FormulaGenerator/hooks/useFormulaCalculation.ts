@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 export const useFormulaCalculation = (initialPointsMax = 25, initialSeuilPercent = 60) => {
   // Valeurs par défaut selon la formule expliquée
-  const [points, setPoints] = useState(5.5);
+  const [points, setPoints] = useState(20); // Changed default points to 20
   const [seuilMinimalPercent, setSeuilMinimalPercent] = useState(initialSeuilPercent); // Seuil en pourcentage
   const [seuilMinimalPoints, setSeuilMinimalPoints] = useState((initialSeuilPercent / 100) * initialPointsMax); // Seuil en points
   const [pointsMax, setPointsMax] = useState(initialPointsMax);
