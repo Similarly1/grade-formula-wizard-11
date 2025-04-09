@@ -1,48 +1,54 @@
 
-import { Copy } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { Clipboard, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
 
 interface FormulaDisplayProps {
   generateFormulaText: () => string;
 }
 
 export const FormulaDisplay = ({ generateFormulaText }: FormulaDisplayProps) => {
-  const { toast } = useToast();
-
-  const copyFormula = () => {
-    navigator.clipboard.writeText(generateFormulaText());
-    toast({
-      title: "Formule copiée",
-      description: "La formule a été copiée dans le presse-papier",
-      duration: 2000,
+  const [copied, setCopied] = useState(false);
+  const formula = generateFormulaText();
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText(formula).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     });
   };
 
   return (
-    <Card>
+    <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-base">Formule Excel générée</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base flex items-center">
+            <Clipboard className="h-4 w-4 mr-2 text-primary" />
+            Formule Excel/Google Sheets
+          </CardTitle>
+          <button
+            onClick={handleCopy}
+            className="text-xs flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+            aria-label="Copier la formule"
+          >
+            {copied ? (
+              <>
+                <CheckCircle2 className="h-4 w-4" /> Copié!
+              </>
+            ) : (
+              <>
+                <Clipboard className="h-4 w-4" /> Copier
+              </>
+            )}
+          </button>
+        </div>
         <CardDescription>Copiez cette formule dans votre tableur</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="bg-muted/30 p-3 rounded-lg flex items-center">
-          <code className="flex-grow mr-2 break-all text-sm font-mono text-muted-foreground">
-            {generateFormulaText()}
-          </code>
-          <Button 
-            onClick={copyFormula}
-            size="sm"
-            variant="outline"
-          >
-            <Copy size={16} className="mr-1" />
-            <span className="sr-only sm:not-sr-only sm:inline">Copier</span>
-          </Button>
+        <div className="bg-muted/30 p-3 rounded-md font-mono text-sm overflow-x-auto">
+          {formula}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          * Remplacez A1 par la cellule contenant vos points
-        </p>
       </CardContent>
     </Card>
   );

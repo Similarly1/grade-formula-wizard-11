@@ -32,7 +32,7 @@ export const Simulation = ({
   isBelowThreshold,
   decimalPlaces
 }: SimulationProps) => (
-  <Card className="mb-6">
+  <Card className="mb-6 bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
     <CardHeader>
       <CardTitle className="text-base">Simulation</CardTitle>
       <CardDescription>Testez différentes valeurs de points pour voir la note correspondante</CardDescription>

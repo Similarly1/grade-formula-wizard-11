@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -47,7 +46,7 @@ export const ParametersForm = ({
   const [noteMaxLocked, setNoteMaxLocked] = useState(true);
   
   return (
-    <Card className="mb-6">
+    <Card className="mb-6 bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Settings className="h-5 w-5 text-primary" />
@@ -306,4 +305,3 @@ export const ParametersForm = ({
     </Card>
   );
 };
-
