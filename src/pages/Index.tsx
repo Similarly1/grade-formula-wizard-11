@@ -3,7 +3,7 @@ import FormulaGenerator from "../components/FormulaGenerator";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
+    <div className="min-h-screen bg-background">
       <FormulaGenerator />
     </div>
   );
