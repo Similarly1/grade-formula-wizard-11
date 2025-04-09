@@ -226,8 +226,18 @@ export const ParametersForm = ({
                     <TooltipTrigger asChild>
                       <sup><Info size={12} className="inline ml-1 text-muted-foreground cursor-help" /></sup>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">Valeur initiale dans la formule</p>
+                    <TooltipContent className="max-w-sm">
+                      <div className="space-y-2">
+                        <p>
+                          <strong>Rôle:</strong> Fixe le point de départ des notes dans le barème.
+                        </p>
+                        <p>
+                          <strong>Exemple:</strong> Une valeur de 1 signifie que toutes les notes commencent à 1 avant d'être ajustées selon les points obtenus.
+                        </p>
+                        <p>
+                          <strong>Utilité:</strong> Permet d'ajuster l'échelle de notation pour obtenir le comportement souhaité.
+                        </p>
+                      </div>
                     </TooltipContent>
                   </Tooltip>
                 </label>
@@ -246,8 +256,18 @@ export const ParametersForm = ({
                     <TooltipTrigger asChild>
                       <sup><Info size={12} className="inline ml-1 text-muted-foreground cursor-help" /></sup>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">Valeur ajoutée en fin de calcul</p>
+                    <TooltipContent className="max-w-sm">
+                      <div className="space-y-2">
+                        <p>
+                          <strong>Rôle:</strong> Valeur ajoutée à la fin du calcul comme un "bonus" ou "malus" uniforme.
+                        </p>
+                        <p>
+                          <strong>Exemple:</strong> Une valeur de 3 augmente toutes les notes de 3 points après le calcul.
+                        </p>
+                        <p>
+                          <strong>Utilité:</strong> Permet de compenser un barème trop strict ou trop généreux.
+                        </p>
+                      </div>
                     </TooltipContent>
                   </Tooltip>
                 </label>
