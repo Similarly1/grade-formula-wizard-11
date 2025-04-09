@@ -3,6 +3,7 @@ import { FormulaDisplay } from './components/FormulaDisplay';
 import { Simulation } from './components/Simulation';
 import { ParametersForm } from './components/ParametersForm';
 import { useFormulaCalculation } from './hooks/useFormulaCalculation';
+import { Github } from 'lucide-react';
 
 export default function FormulaGenerator() {
   const {
@@ -71,6 +72,19 @@ export default function FormulaGenerator() {
       <FormulaDisplay 
         generateFormulaText={generateFormulaText}
       />
+      
+      <footer className="mt-8 text-center text-sm text-muted-foreground">
+        <a 
+          href="https://github.com/Similarly1/grade-formula-wizard-11" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="flex items-center justify-center gap-2 hover:text-primary transition-colors"
+        >
+          <Github className="h-5 w-5" />
+          Open Source sur GitHub
+        </a>
+      </footer>
     </div>
   );
 }
+
